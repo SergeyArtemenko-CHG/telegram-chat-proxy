@@ -33,6 +33,26 @@ app.post("/api/bridge", async (req, res) => {
   }
 });
 
+app.post("/api/tg-webhook", async (req, res) => {
+  try {
+    const upstream = await axios.post(
+      "https://etalonklimat.ru/api/telegram-webhook",
+      req.body,
+      {
+        headers: { "Content-Type": "application/json" },
+        validateStatus: () => true,
+      }
+    );
+
+    return res.status(upstream.status).json(upstream.data);
+  } catch (error) {
+    const status = error.response?.status || 502;
+    const data = error.response?.data || { ok: false, error: error.message };
+    console.error("tg-webhook forward failed:", error.message);
+    return res.status(status).json(data);
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Bridge listening on port ${PORT}`);
 });
